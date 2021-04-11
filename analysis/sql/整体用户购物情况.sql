@@ -28,15 +28,14 @@ from fact_person_info
 ;
 
 -- 有购买行为的用户数
-select count(detail.person_id) as 购买用户数
+select count(distinct detail.person_id) as 购买用户数
 from dim_order_info as m_order
          inner join fact_order_detail_info as detail
                     on detail.order_no = m_order.order_no
-group by detail.person_id
 ;
 
 -- 潜客数
-select count(person.person_id) as 潜客数
+select count(distinct person.person_id) as 潜客数
 from fact_person_info as person
          left join (
     select detail.person_id as person_id
@@ -46,10 +45,9 @@ from fact_person_info as person
 ) as temp
                    on person.person_id = temp.person_id
 where temp.person_id is null
-group by person.person_id
 ;
 
--- 店铺购买人数、复购人数、复购率
+-- 店铺购买人数
 select detail.store, count(distinct detail.person_id) as 购买人数
 from dim_order_info as m_order
          inner join fact_order_detail_info as detail
@@ -57,45 +55,46 @@ from dim_order_info as m_order
 group by detail.store
 ;
 
-select detail.store, count(detail.person_id) as 复购人数
+-- 店铺复购人数
+select detail.store, count(distinct detail.person_id) as 复购人数
 from (
          select detail.person_id,
                 detail.store,
-                count(detail.order_no) as order_num
+                count(distinct detail.order_no) as order_num
          from dim_order_info as m_order
                   inner join fact_order_detail_info as detail
                              on detail.order_no = m_order.order_no
          group by detail.person_id,
-                  detail.store,
-                  detail.order_no
+                  detail.store
      ) as temp
 where order_num >= 2
-group by detail.person_id, detail.store
+group by detail.store
 ;
 
-select buying.detail.store as store, concat(round((buy_num / rebuy_num) * 100, 2), '%') as 复购率
+-- 店铺购买人数、复购人数、复购率
+select buying.detail.store as store,buy_num as 购买人数,rebuy_num as 复购人数,concat(round((rebuy_num / buy_num) * 100, 2), '%') as 复购率
 from (
          select detail.store,
-                count(detail.person_id) as buy_num
+                count(distinct detail.person_id) as buy_num
          from dim_order_info as m_order
                   inner join fact_order_detail_info as detail
                              on detail.order_no = m_order.order_no
-         group by detail.store, detail.person_id
+         group by detail.store
      ) as buying
          inner join (
     select detail.store,
-           count(detail.person_id) as rebuy_num
+           count(distinct detail.person_id) as rebuy_num
     from (
              select detail.person_id,
                     detail.store,
-                    count(detail.order_no) as order_num
+                    count(distinct detail.order_no) as order_num
              from dim_order_info as m_order
                       inner join fact_order_detail_info as detail
                                  on detail.order_no = m_order.order_no
-             group by detail.person_id, detail.store, detail.order_no
+             group by detail.person_id, detail.store
          ) as temp
     where order_num >= 2
-    group by detail.person_id, detail.store
+    group by detail.store
 ) as rebuying
                     on buying.detail.store = rebuying.detail.store
 ;
