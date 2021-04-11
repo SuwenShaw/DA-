@@ -4,7 +4,7 @@ select count(url) as 总访问量, count(url) / (datediff(max(visit_time), min(v
 from (
          select visit_time, url
          from web_action_log
-         union
+         union all
          select visit_time, url
          from app_action_log
      ) as temp
@@ -15,14 +15,14 @@ select day(visit_time), count(url) as 日访问量
 from (
          select day(visit_time), url
          from web_action_log
-         union
+         union all
          select day(visit_time), url
          from app_action_log
      ) as temp
 group by day(visit_time)
 ;
 
--- UV（总用户数）
+-- 总用户数
 select count(distinct person_id) as 总用户数
 from fact_person_info
 ;
@@ -50,11 +50,11 @@ group by person.person_id
 ;
 
 -- 店铺购买人数、复购人数、复购率
-select detail.store, count(detail.person_id) as 购买人数
+select detail.store, count(distinct detail.person_id) as 购买人数
 from dim_order_info as m_order
          inner join fact_order_detail_info as detail
                     on detail.order_no = m_order.order_no
-group by detail.store, detail.person_id
+group by detail.store
 ;
 
 select detail.store, count(detail.person_id) as 复购人数

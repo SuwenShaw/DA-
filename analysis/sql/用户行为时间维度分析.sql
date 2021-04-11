@@ -4,7 +4,7 @@ select hour(visit_time) as 时段, count(url) as 访问量
 from (
          select hour(visit_time), url
          from web_action_log
-         union
+         union all
          select hour(visit_time), url
          from app_action_log
      ) as temp
@@ -17,7 +17,7 @@ select date_format(visit_time, '%W') as 星期, count(url) as 访问量
 from (
          select date_format(visit_time, '%W'), url
          from web_action_log
-         union
+         union all
          select date_format(visit_time, '%W'), url
          from app_action_log
      ) as temp
@@ -30,7 +30,7 @@ select day(visit_time) as 日期, count(url) as 访问量
 from (
          select day(visit_time), url
          from web_action_log
-         union
+         union all
          select day(visit_time), url
          from app_action_log
      ) as temp
