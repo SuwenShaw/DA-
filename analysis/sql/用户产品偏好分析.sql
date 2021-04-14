@@ -5,6 +5,7 @@ select sku_code,
        concat(round((fav + cart) / pv * 100, 2), '%') as pv_to_favcart,
        concat(round(buy / pv * 100, 2), '%')          as pv_to_buy
 from (
+    -- 筛选访问量前十的产品
          select sku_code, count(url) as pv
          from (
                   select sku_code, url
@@ -14,8 +15,11 @@ from (
                   from app_action_log
               ) as temp
          group by sku_code
+         order by pv desc
+         limit 10
      ) as t1
          left join (
+    -- 各产品的收藏、加购量
     select sku_code,
            sum(case when action_type = 'fav' then 1 else 0 end)  as fav,
            sum(case when action_type = 'cart' then 1 else 0 end) as cart
@@ -24,6 +28,7 @@ from (
 ) as t2
                    on t1.sku_code = t2.sku_code
          left join (
+    -- 各产品的购买量
     select sku_code,
            count(order_detail_no) as buy
     from dim_order_info as m_order
@@ -32,8 +37,6 @@ from (
     group by sku_code
 ) as t3
                    on t1.sku_code = t3.sku_code
-order by pv desc
-limit 10
 ;
 
 -- 销量前十的产品
