@@ -107,7 +107,7 @@ from (
                            union all
                            select url
                            from app_action_log
-                       ) as temp
+                       ) as temp1
               ) as t1
                   left join (
              select 'key'                                                 as t_key,
@@ -124,7 +124,7 @@ from (
                                  on detail.order_no = m_order.order_no
          ) as t3
                             on t1.t_key = t3.t_key
-     ) as temp
+     ) as temp2
 ;
 
 -- method2
